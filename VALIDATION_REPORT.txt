@@ -1,0 +1,73 @@
+CAPACITY CONNECT / FIGR.IT — SIH26075
+VALIDATION REPORT
+Date: 15 September 2026
+
+WHAT WAS VALIDATED IN THIS BUILD ENVIRONMENT
+--------------------------------------------
+1. Backend Python source compilation
+   Command category: python compileall
+   Result: PASS
+   Scope: backend/training and backend/figr_backend
+
+2. Frontend TypeScript / TSX syntax transpilation
+   Result: PASS
+   Files checked: 17 Capacity Connect/app/lib TS/TSX source files
+   Syntax diagnostics: 0
+
+3. Local @/ alias import file sanity
+   Result: PASS
+   Missing local source imports: 0
+
+4. Capacity UI CTA audit
+   Result: PASS for components/capacity
+   Visible <button> elements without an explicit click/submit action: 0
+   Prototype-only actions that do not mutate backend state show an explanatory toast rather than silently doing nothing.
+
+5. Backend edge-case hardening applied
+   - ISO mentor slot parsing uses Python datetime
+   - past mentor slots rejected
+   - session duration restricted to 20 or 30 minutes
+   - selected slot must exist inside mentor availability
+   - overlapping scheduled mentor bookings rejected inside a DB transaction
+   - missing mentor-session outcomes serialize safely
+   - admin endpoints use backend role guards
+   - intervention predictions are explicitly labelled simulated/estimated
+
+6. Backend test suite added
+   File: backend/training/tests.py
+   Covers:
+   - trainee cannot access admin Capacity Pulse
+   - adaptive diagnostic completes and generates role/gap/path output
+   - mentor overlap is rejected
+   - admin simulator exposes non-guaranteed simulated label
+
+LIMITATIONS OF THIS SANDBOX VALIDATION
+--------------------------------------
+A full dependency installation and runtime browser build could not be completed in the sandbox because external package-registry/DNS access was unavailable during validation.
+
+- `npm run build` could not start because the attempted npm dependency install was incomplete and `vinext` was therefore unavailable.
+- Django runtime/integration tests could not be executed because Django was not installed in the sandbox, and pip could not reach the package registry.
+
+This is NOT being reported as “zero bugs guaranteed.”
+The source-level Python compilation and TS/TSX syntax checks pass, but the final project should still be run once on a normal internet-connected development machine using the included setup instructions.
+
+RECOMMENDED LOCAL FINAL CHECK
+-----------------------------
+Backend:
+  cd backend
+  python -m venv .venv
+  .venv\Scripts\activate
+  python -m pip install -r requirements.txt
+  python setup_demo.py
+  python manage.py test training
+  python manage.py runserver 8000
+
+Frontend:
+  npm install
+  npm run build
+  npm run dev
+
+Then demo the three seeded roles:
+  trainee@figr.it / demo123
+  trainer@figr.it / demo123
+  admin@figr.it / demo123
